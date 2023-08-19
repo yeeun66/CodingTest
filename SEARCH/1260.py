@@ -24,10 +24,10 @@ def bfs():
         print(cur, end=" ")
         queue.extend(graph[cur])
 
-n, m, v = map(int, input().split())
+n, m, v = map(int, input().split()) # vertex, edge, start vertex
 # graph 생성
-graph = [[] for _ in ' '*(n+1)] # (n+1)*(n+1) matrix에 공백 추가
-for _ in ' '*m: # m+1번 반복
+graph = [[] for _ in ' '*(n+1)] # n+1 길이의 리스트 생성
+for _ in ' '*m: # m번 반복
     x, y = map(int, input().split())
     graph[x].append(y)
     graph[y].append(x)
