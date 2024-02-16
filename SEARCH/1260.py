@@ -26,7 +26,7 @@ def bfs():
 
 n, m, v = map(int, input().split()) # vertex, edge, start vertex
 # graph 생성
-graph = [[] for _ in ' '*(n+1)] # n+1 길이의 리스트 생성
+graph = [[] for _ in range(n+1)] # n+1 길이의 리스트 생성 (정점번호 1~N 까지라 그냥 n+1 만큼 만들어준거)
 for _ in ' '*m: # m번 반복
     x, y = map(int, input().split())
     graph[x].append(y)
