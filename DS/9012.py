@@ -9,7 +9,6 @@
 # 닫는 괄호면 stack의 top 원소 pop
 # 닫는 괄호 남아있는데 stack에 아무것도 없으면 반복 종료 -> NO
 # 반복문 이후 stack이 empty면 -> YES. 아니면 -> NO
-# 
 
 T = int(input())
 

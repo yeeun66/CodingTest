@@ -31,6 +31,6 @@ for _ in ' '*m: # m번 반복
     x, y = map(int, input().split())
     graph[x].append(y)
     graph[y].append(x)
-graph = list(map(sorted, graph))
+graph = list(map(sorted, graph)) # 인접한 node가 여러개면 오름차순 방문이니까 정렬해줘야함
 dfs()
 bfs()
