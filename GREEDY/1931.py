@@ -1,5 +1,9 @@
 # 회의실 배정
 # 최대 사용할 수 있는 회의의 최대 개수를 출력
+# (회의의 시작시간과 끝나는 시간이 같을 수도 있다)
+import sys
+input = sys.stdin.readline
+
 n = int(input())
 d = []
 for i in range(n) :
