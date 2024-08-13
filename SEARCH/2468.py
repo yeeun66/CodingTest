@@ -25,7 +25,7 @@ safe = 0
 def bfs(a) :
     count = 0
     queue = deque()
-    visit = [[0] * N for _ in range(N)]
+    visit = [[0] * N for _ in range(N)] # 방문 여부 체크 metrics
     
     for i in range(N) :
         for j in range(N) :
@@ -51,7 +51,8 @@ N = int(input())
 graph = []
 [graph.append(list(map(int, input().split()))) for _ in range(N)] # 이것도 메모리 줄이는 방법중 하나 _ 근데 해결 못함
 
-max_v = max(map(max, graph))
+max_v = max(map(max, graph)) # 최대 높이 만큼 반복 위해 최대 높이 구하기
+# print("max_v: ", max_v) 
 for k in range(1, max_v+1) : bfs(k)
 
 print(safe)

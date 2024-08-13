@@ -15,14 +15,14 @@ def dfs():
     print()
 
 def bfs():
-    queue = deque([v])
+    queue = deque([v]) # 시작 vertex를 먼저 큐에 넣어줌
     visit = [0]*(n+1)
     while queue:
-        cur = queue.popleft()
-        if visit[cur]: continue
+        cur = queue.popleft() # 맨 앞 원소 pop
+        if visit[cur]: continue # 방문 한거면 무시
         visit[cur] = True 
         print(cur, end=" ")
-        queue.extend(graph[cur])
+        queue.extend(graph[cur]) # 방금 방문 끝낸 원소의 인접 노드들을 큐에 넣어줌
 
 n, m, v = map(int, input().split()) # vertex, edge, start vertex
 # graph 생성
@@ -31,6 +31,9 @@ for _ in ' '*m: # m번 반복
     x, y = map(int, input().split())
     graph[x].append(y)
     graph[y].append(x)
-graph = list(map(sorted, graph)) # 인접한 node가 여러개면 오름차순 방문이니까 정렬해줘야함
+
+graph = list(map(sorted, graph)) # 인접한 node가 여러개면 오름차순 방문이니까 정렬 해줘야함
+print("graph: ", graph)
+
 dfs()
 bfs()
