@@ -8,16 +8,29 @@
 
 # 맨 위층 7부터 시작해서 아래에 있는 수 중 하나를 선택하여 아래층으로 내려올 때, 이제까지 선택된 수의 합이 최대가 되는 경로를 구하는 프로그램을 작성하라. 
 # 아래층에 있는 수는 현재 층에서 선택된 수의 대각선 왼쪽 또는 대각선 오른쪽에 있는 것 중에서만 선택할 수 있다.
+# 삼각형의 크기 n(1 ≤ n ≤ 500), 삼각형을 이루고 있는 각 수 범위: 0 이상 9999 이하
 
-# 누적합 구하는 식으로 더하면 되지 않나
-# 
+# 방법:
+# 0번째는 1개니까 그냥 초기화
+# 1번째 ~ n번째 까지 다음을 반복 (i)
+    # 0번부터 i번째까지 아래를 반복하며 dp값 최대로 업데이트 (j)
+        # 0번째면, 본인 + dp[i-1][0]
+        # n-1 번째면, 본인 + dp[i-1][j-1]
+        # 나머지 가운데 있는 값들의 경우, 본인 위의 오,왼 모두 가능하므로 본인 + max(dp[i-1][j-1], dp[i-1][j])
+# 마지막 dp[n-1]의 최대값 출력
+
 import sys
 input = sys.stdin.readline
 
 n = int(input())
-dp = [ [0] * (n+1) for _ in range(n+1) ]
-tri = []
+dp = []
+for _ in range(n) :
+    dp.append(list(map(int, input().split())))
 
-for _ in range(n):
-    tri.append(list(map(int, input().split())))
+for i in range(1, n) :
+    for j in range(i+1) :
+        if j == 0 : dp[i][j] += dp[i-1][j]
+        elif j == i : dp[i][j] += dp[i-1][j-1]
+        else : dp[i][j] += max(dp[i-1][j-1], dp[i-1][j])
 
+print(max(dp[n-1]))
