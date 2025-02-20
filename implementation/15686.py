@@ -35,13 +35,9 @@
 # 메모리 초과 해결하기~ 
 # bfs로 다 탐색하는게 아니라 집 하나에 대하여 가장 가까운 치킨 집 하나만 찾아서 거리 계산하면 되니까
     # 현재 선택된 치킨집 배열들을 하나씩 비교하며 최소값 찾으면 됨!!
-    
 import sys
 from itertools import combinations
 input = sys.stdin.readline
-
-dx = [1, -1, 0, 0]
-dy = [0, 0, 1, -1]
 
 def find_bhc(city) :
     tmp = 0
