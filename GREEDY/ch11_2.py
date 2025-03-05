@@ -9,5 +9,4 @@ for i in range(1, len(string)) :
     num = int(string[i])
     if num <= 1 or result <= 1 : result += num
     else : result *= num
-
 print(result)
