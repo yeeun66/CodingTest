@@ -30,9 +30,9 @@ arr = list(map(int, input().split()))
 for a in arr : conv.append([a, False])
 
 cnt = 0 
-step = 1
+step = 0
 while cnt < K  : 
-    cnt = 0 
+    step += 1
 
     conv.rotate(1)
     if conv[N-1][1] == True : conv[N-1][1] = False
@@ -49,8 +49,5 @@ while cnt < K  :
         conv[0][0] -= 1
     
     cnt = sum([1 for i in conv if i[0] == 0]) # 이거 고쳤다고 시간초과 해결되는게 ... 신기
-    
-    if cnt >= K : break
-    step += 1
 
 print(step)
