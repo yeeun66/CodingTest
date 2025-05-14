@@ -20,7 +20,7 @@ def backtrack() :
         return
     
     for n in n_list :
-        if n not in arr : 
+        if n not in arr : # 중복 금지
             arr.append(n)
             backtrack()
             arr.pop()
