@@ -144,6 +144,5 @@ for _ in range(M) :
     board, Y, tx, ty = move(tx, ty, n, Y) # 2. 승객 이동 시키기 
     cnt += 1
 
-
 if cnt == M: print(Y)
 else : print(-1)
