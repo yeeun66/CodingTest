@@ -73,7 +73,7 @@ def bfs():
                 elif graph[n] == 0 : 
                     graph[n] = graph[cur] + 1
                     que.append(n)
-                    dic[n] = cur # n의 부모는 cur이다
+                    dic[n] = cur # cur의 부모는 n이다
 if N == K : 
     print(0)
     print(N)  
