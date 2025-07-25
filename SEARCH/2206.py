@@ -48,7 +48,6 @@ def bfs() :
     que.append((0, 0, 0))
     visited[0][0][0] = 1
 
-    cnt = 1
     while que : 
         x, y, wall = que.popleft()
         
