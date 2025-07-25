@@ -1,65 +1,78 @@
 # 벽 부수고 이동하기
-# 최단거리 이동 - 벽 1개까지 부수기 가능
+# 벽을 최대 한개 까지는 부수고 이동 가능
+# 왼쪽 위 -> 오른쪽 아래 끝으로 가능 최단 경로 구하기
 
-"""
-(시간초과 로직 - 모든 벽에 대해서 bfs 다 돌려버리기)
-1. 처음에 벽 안부수는 최단 거리 계산(bfs) - min_dist에 넣어두기
-2. 벽을 한개씩 없애서(그냥 반복문) 최단거리 탐색(bfs)
-    - 각 경우에 대해 현재 min_dist보다 작으면, 그 값으로 업데이트
-3. 이동 불가하면, 즉 첫 min_dist가 여전히 무한대면, -1 출력
-"""
+'''
+모든 벽에 대해서 bfs 다 돌려버리면 시간 초과 남
+'''
 
-"""
-(시간초과 해결- 3차원 배열 아이디어)
-아이디어: 0번째 2차원 방문 벽을 안부수는 방문 / 1번째 2차원 방문은 벽을 부순 후 방문
-- 큐에 (좌표, 벽 부서져서 온 것인지 여부를 나타냄 brk 1이면 부서져서 온 것)
-- 벽 부서져서 온 것은 다음에 새로운 벽 더이상 부술 수 X
-- 벽 아직 안부수고 큐에 담긴 건 다음에 1을 만나면 벽 부술 수 있음
+''' 
+3차원 배열 사용 (그림으로 이해하면 쉬움) 
+    - 0번은 벽 안부숨 (다음에 1로 갈 가능성O) / 1번은 벽 부순 후 (다음에 1로는 절대 못감)
+    - 이때 그림으로 이해하기 좋은 입력 예시
+        3 6
+        010000
+        010111
+        000110
+        정답: 12
+        
+로직) bfs 딱한번만 돌리기
+- 이전에 벽은 부쉈는지, 안부쉈는지를 기록하는 변수와 함께 큐에 저장 (좌표, 1) <- 벽 부숨, (좌표, 0) <- 아직 안부숨 
+    - wall = 0 일 때, 
+        - 이동할 칸이 0 이면:
+            0번 방문기록이 없을 때, 0번 방문기록 = 0번 부모 + 1
+        - 이동할 칸이 1 이면:
+            1번 방문기록이 없을 때, 1번 방문기록 = 0번 부모 + 1
+        - 큐에는 좌표랑 이동할 칸 (0 또는 1) 넣기 
 
-"""
+    - wall = 1 이면, 
+        - 이동할 칸이 0 이면: 
+            1번 방문기록이 없을 때, 1번 방문기록 = 1번 부모 + 1
+        - 이동할 칸이 1 이면, 이동 불가
+        - 큐에는 좌표랑 1 넣기
+'''
+
 from collections import deque
-import sys
-input = sys.stdin.readline
-
 dx = [-1, 1, 0, 0]
 dy = [0, 0, -1, 1]
-
 N, M = map(int, input().split())
 board = []
 for _ in range(N) : board.append(list(map(int, input().strip())))
-board[N-1][M-1] = 2 # 도착 지점 
-INF = 1000000
-min_dist = INF
 
-def is_inrange(x, y) :
+def is_inrange(x, y) : 
     return 0<=x<N and 0<=y<M
 
-def bfs() :
+def bfs() : 
     visited = [[[0, 0] for _ in range(M)] for _ in range(N)]
-    # for v in visited : print(v)
-    visited[0][0][0] = 1
     que = deque()
-    que.append((0, 0))
+    que.append((0, 0, 0))
+    visited[0][0][0] = 1
+
+    cnt = 1
     while que : 
-        x, y = que.popleft()
+        x, y, wall = que.popleft()
+        
         for i in range(4) :
             nx, ny = x + dx[i], y + dy[i]
-            if is_inrange(nx, ny) and not visited[nx][ny] and board[nx][ny] != 1:
-                if board[nx][ny] == 2 : return visited[x][y] + 1
-                visited[nx][ny] = visited[x][y] + 1
-                que.append((nx, ny))
+            if not is_inrange(nx, ny) : continue
+            if wall == 0 : 
+                if board[nx][ny] == 0 and not visited[nx][ny][0]: 
+                    visited[nx][ny][0] = visited[x][y][0] + 1
+                    que.append((nx, ny, 0))
+                elif board[nx][ny] == 1 and not visited[nx][ny][1]: 
+                    visited[nx][ny][1] = visited[x][y][0] + 1
+                    que.append((nx, ny, 1))
+                
+            elif wall == 1 : 
+                if board[nx][ny] == 0 and not visited[nx][ny][1]: 
+                    visited[nx][ny][1] = visited[x][y][1] + 1
+                    que.append((nx, ny, 1))
     
-    return INF
+    return visited
 
-min_dist = bfs() # 1
+visit = bfs()
 
-for i in range(N) :
-    for j in range(M) :
-        if board[i][j] == 1 : 
-            board[i][j] = 0
-            temp = bfs() # 2
-            min_dist = min(min_dist, temp)
-            board[i][j] = 1
-
-if min_dist == INF : print(-1) # 3
-else : print(min_dist)
+if visit[N-1][M-1][0] == 0 and visit[N-1][M-1][1] == 0 : print(-1)
+elif visit[N-1][M-1][0] == 0 and visit[N-1][M-1][1] != 0 : print(visit[N-1][M-1][1])
+elif visit[N-1][M-1][0] != 0 and visit[N-1][M-1][1] == 0 : print(visit[N-1][M-1][0])
+else : print(min(visit[N-1][M-1][0], visit[N-1][M-1][1]))
