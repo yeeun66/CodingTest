@@ -1,173 +1,121 @@
 # 큐빙
-"""
-로직
-주어지는 명령 (돌릴면, 방향)에 대해 회전 수행
-0. 배열 관리 (deque로 관리)
-    - 큐브의 한면을 3x3 배열로 생각
-    - 큐브 전체는 4x3의 전개도로 생각
+'''
+로직 
+큐브돌리는 사이트 (https://rubiks-cube-solver.com/fr/) 보고 디버깅함. 이거 없었으면 더 오래걸렸을 듯.. 
+명령대로 모두 돌린 다음, 가장 윗 면의 색상 구하기
+0. 배열 관리
+    - 전개도로 하지 말고, 각 위치별 배열 따로 관리
+    - up, down, front, back, left, right : 6면 (위, 아래, 앞, 뒤, 왼, 오)
+    - 처음에는 각 면에 초기 색상 넣기 
+1. 큐브 돌리기 (반시계는 시계 방향 3번이니까 굳이 구현X)
+    '' U, D는 방향 서로 반대 ''
+    (0) 본인 돌리기 (시계방향 or 시계 3번)
+    (1) U (윗면 돌리기) => (front, back, left, right) 서로 0번째 행 바꾸기 
+        - (+) 이면 => temp = front, front = right, right = back, back = left, left = temp
+        - (-) 이면 => 위 3번 수행
+    (2) D (아랫면 돌리기) => (front, back, left, right) 서로 2번째 행 바꾸기 
+        - (+) 이면 => temp = right, right = front, front = left, left = back, back = temp
+    (3) F (앞면 돌리기) => (up의 2번째 행, right의 0번째 열, down의 0번째 행, left의 2번째 열) 바꾸기 
+        - (+) 이면 => temp = right, right = up, up = left, left = down, down = temp
+    (4) B (뒷면 돌리기) => (up의 0번째 행, right의 2번째 열, down의 2번째 행, left의 0번째 열) 바꾸기 
+        - (+) 이면 => temp = right, right = down, down = left, left = up, up = temp
+    (5) L (왼쪽 돌리기) => (up의 0번째 열, front의 0번째 열, down의 0번째 열, back의 2번째 열) 바꾸기 
+        - (+) 이면 => temp = up, up = back, back = down, down = front, front = temp
+    (6) R (오른쪽 돌리기) => (up의 2번째 열, front의 2번째 열, down의 2번째 열, back의 0번째 열) 바꾸기 
+        - (+) 이면 => temp = up, up = front, front = down, down = back, back = temp
 
-1. 회전 로직
-(1) L+ L-
-    - 전개도에서 왼, 오를 제외한 세로 영역에 대해서 0번째 열들의 원소를 회전
-    - (+) 위쪽으로 회전 3 -> 2 -> 1 -> 0 -> 3
-    - (-) 아래쪽으로 회전 3-> 0 -> 1 -> 2 -> 3
-(2) R+ R-
-    - 전개도에서 왼, 오를 제외한 세로 영역에 대해서 2번째 열들의 원소를 회전
-    - (+) 위쪽으로 회전 3 -> 2 -> 1 -> 0 -> 3
-    - (-) 아래쪽으로 회전 3-> 0 -> 1 -> 2 -> 3
-(3) F+ F-
-    - 전개도에서 앞, 뒤를 제외한 영역에 대해서 2번째 행들의 원소를 회전
-    - (+) 오른쪽으로 회전 w -> b -> y -> g -> w
-    - (-) 왼쪽으로 회전 w-> g -> y -> b -> w
-(4) B+ B-
-    - 전개도에서 앞, 뒤를 제외한 영역에 대해서 0번째 행들의 원소를 회전
-    - (+) 오른쪽으로 회전 w -> b -> y -> g -> w
-    - (-) 왼쪽으로 회전 w-> g -> y -> b -> w
-(5) U+ U-
-    - 전개도에서 위, 아래를 제외한 영역에 대해서 0번째 행들의 원소를 회전
-    - (+) 오른쪽으로 회전 r -> b -> o -> g -> r
-    - (-) 왼쪽으로 회전 r-> g -> o -> b -> r
-(6) D+ D-
-    - 전개도에서 위, 아래를 제외한 영역에 대해서 2번째 행들의 원소를 회전
-    - (+) 오른쪽으로 회전 r -> b -> o -> g -> r
-    - (-) 왼쪽으로 회전 r-> g -> o -> b -> r
+'''
 
-2. 각 TC마다 윗면의 9칸 값 출력 white 배열
-"""
-
-# 근데 사실 전개도로 안하고, 6면 다 따로 배열 만들어도 되긴함 -> 이게 더 편할 것 같아서 이 방법으로 바꿈 
-
-# 고려하지 않은게 있었다.. 큐브 돌리면 배열도 돌아감
-    # 돌린면은 해당 방향으로 배열 회전도 함 - roate_arr로 돌리기
-
-# 또 고려하지 않은것!! 통째로 함 -> 근데 행 단위니까 통째로 행 해도 되잖아 
-
-from collections import deque
-orange = [['o' for _ in range(3)] for _ in range(3)]
-green = [['g' for _ in range(3)] for _ in range(3)]
-yellow = [['y' for _ in range(3)] for _ in range(3)]
-blue = [['b' for _ in range(3)] for _ in range(3)]
-red = [['r' for _ in range(3)] for _ in range(3)]
-white = [['w' for _ in range(3)] for _ in range(3)]
-
-def left_right(s, r, lr):
-    # s번째 열들의 원소 방향에 따라 회전
-    if lr == 'R' :
-        if r == '+' : r = '-'
-        else : r = '+'
-
-    if r == '+' :
-        tmp_org = [o[:] for o in orange]
-        for i in range(3) :
-            orange[i][s] = yellow[i][s]
-            yellow[i][s] = red[i][s]
-            red[i][s] = white[i][s]
-            white[i][s] = tmp_org[i][s]
-
-    else : 
-        tmp_white = [w[:] for w in white]
-        for i in range(3) :
-            white[i][s] = red[i][s]
-            red[i][s] = yellow[i][s] 
-            yellow[i][s] = orange[i][s]
-            orange[i][s] = tmp_white[i][s]
-
-    return orange, yellow, red, white
-
-def front_back(s, r, fb): # back일때도 바라보는 기준으로 시계 방향이므로 방향 반대임
-    # s번째 행들의 원소 방향에 따라 회전
-    if fb == 'B' :
-        if r == '+' : r = '-'
-        else : r = '+'
-
-    tmp_blue = [b[:] for b in blue]
-    if r == '+' :
-        blue[s] = white[s]
-        white[s] = green[s]
-        green[s] = yellow[s]
-        yellow[s] = tmp_blue[s]
-    else :
-        blue[s] = yellow[s]
-        yellow[s] = green[s]
-        green[s] = white[s]
-        white[s] = tmp_blue[s]
+import copy
+cube = [[] for _ in range(6)]
+def init_() : 
+    # cube = [[] for _ in range(6)]
+    cube[0] = [['w' for _ in range(3)] for _ in range(3)] # up
+    cube[1] = [['g' for _ in range(3)] for _ in range(3)] # left
+    cube[2] = [['r' for _ in range(3)] for _ in range(3)] # front
+    cube[3] = [['b' for _ in range(3)] for _ in range(3)] # right
+    cube[4] = [['o' for _ in range(3)] for _ in range(3)] # back
+    cube[5] = [['y' for _ in range(3)] for _ in range(3)] # down 
     
-    return blue, white, green, yellow
-
-def up_down(s, r, ud):
-    # s번째 행들의 원소 방향에 따라 회전
-    if ud == 'D' :
-        if r == '+' : r = '-'
-        else : r = '+'
-
-    tmp_blue = [b[:] for b in blue]
-    if r == '+' :
-        blue[s] = orange[s]
-        orange[s] = green[s]
-        green[s] = red[s]
-        red[s] = tmp_blue[s]
-    else : 
-        blue[s] = red[s]
-        red[s] = green[s]
-        green[s] = orange[s]
-        orange[s] = tmp_blue[s]
-
-    return blue, red, green, orange
-
-def roate_arr(d, arr) :
-    new_arr = [a[:] for a in arr]
-
-    if d == '+' : # 시계 
-        for i in range(3) :
-            for j in range(3) :
-                new_arr[i][j] = arr[j][2-i]
+# print(cube)
+def rotate_self(s, iterate) : 
+    for _ in range(iterate) : 
+        new_lst = [c[:] for c in cube[s]]
+        for i in range(3) : 
+            for j in range(3) : 
+                cube[s][i][j] = new_lst[2-j][i]
     
-    else : # 반시계 
-        for i in range(3) :
-            for j in range(3) :
-                new_arr[i][j] = arr[2-j][i]
+def rotate_other(s, iterate) : 
+    if s == 0 : # up
+        for _ in range(iterate) : 
+            origin_cube = copy.deepcopy(cube)
+            cube[2][0] = origin_cube[3][0]; cube[3][0] = origin_cube[4][0]; cube[4][0] = origin_cube[1][0]; cube[1][0] = origin_cube[2][0]
 
-    return new_arr
+    elif s == 5 : # down
+        for _ in range(iterate) : 
+            origin_cube = copy.deepcopy(cube)
+            cube[3][2] = origin_cube[2][2]; cube[2][2] = origin_cube[1][2]; cube[1][2] = origin_cube[4][2]; cube[4][2] = origin_cube[3][2]
+
+    elif s == 2 : # front
+        for _ in range(iterate) : 
+            origin_cube = copy.deepcopy(cube)
+            for i in range(3) : 
+                cube[0][2][i] = origin_cube[1][2-i][2]
+                cube[1][i][2] = origin_cube[5][0][i]
+                cube[5][0][i] = origin_cube[3][2-i][0]
+                cube[3][i][0] = origin_cube[0][2][i]
+
+    elif s == 4 : # back
+        for _ in range(iterate) :
+            origin_cube = copy.deepcopy(cube) 
+            for i in range(3) : 
+                cube[0][0][i] = origin_cube[3][i][2]
+                cube[3][i][2] = origin_cube[5][2][2-i]
+                cube[5][2][i] = origin_cube[1][i][0]
+                cube[1][i][0] = origin_cube[0][0][2-i]
+
+    elif s == 1 : # left
+        for _ in range(iterate) :
+            origin_cube = copy.deepcopy(cube) 
+            for i in range(3) : 
+                cube[0][i][0] = origin_cube[4][2-i][2]
+                cube[4][i][2] = origin_cube[5][2-i][0]
+                cube[5][i][0] = origin_cube[2][i][0]
+                cube[2][i][0] = origin_cube[0][i][0]
+
+    else : # right
+        for _ in range(iterate) : 
+            origin_cube = copy.deepcopy(cube)
+            for i in range(3) : 
+                cube[0][i][2] = origin_cube[2][i][2]
+                cube[2][i][2] = origin_cube[5][i][2]
+                cube[5][i][2] = origin_cube[4][2-i][0]
+                cube[4][i][0] = origin_cube[0][2-i][2]
 
 T = int(input())
-for _ in range(T) :
+for _ in range(T) : 
+    init_() 
     n = int(input())
     cmd = list(map(str, input().split()))
-    # tc 마다 초기화 
-    orange = [['o' for _ in range(3)] for _ in range(3)]
-    green = [['g' for _ in range(3)] for _ in range(3)]
-    yellow = [['y' for _ in range(3)] for _ in range(3)]
-    blue = [['b' for _ in range(3)] for _ in range(3)]
-    red = [['r' for _ in range(3)] for _ in range(3)]
-    white = [['w' for _ in range(3)] for _ in range(3)]
+    for i in range(n) : 
+        side, d = cmd[i]
+        if d == '+' : iters = 1
+        else : iters = 3
+        if side == 'U' : num = 0
+        elif side == 'L' : num = 1
+        elif side == 'F' : num = 2
+        elif side == 'R' : num = 3
+        elif side == 'B' : num = 4
+        else : num = 5
 
-    for i in range(n):
-        side, rot = cmd[i]
-        if side == 'L' : 
-            orange, yellow, red, white = left_right(0, rot, 'L')
-            green = roate_arr(rot, green)
-        elif side == 'R' : 
-            orange, yellow, red, white = left_right(2, rot, 'R')
-            blue = roate_arr(rot, blue)
-        elif side == 'F' : 
-            blue, white, green, yellow = front_back(2, rot, 'F')
-            red = roate_arr(rot, red)
-        elif side == 'B' : 
-            blue, white, green, yellow = front_back(0, rot, 'B')
-            orange = roate_arr(rot, orange)
-        elif side == 'U' : 
-            blue, red, green, orange = up_down(0, rot, 'U')
-            white = roate_arr(rot, white)
-        elif side == 'D' : 
-            blue, red, green, orange = up_down(2, rot, 'D')
-            yellow = roate_arr(rot, yellow)
+        rotate_self(num, iters)
+        rotate_other(num, iters)
         
-        ### 디버깅
-        # if n == 4 :
-        #     print('='*7)
-        #     for w in white : 
-        #         print(''.join(w))
-    for w in white : print(''.join(w))
-    ### 디버깅
-    # for g in green : print(''.join(g))
-
+        ## 디버깅 ## 
+        # print(side, d)
+        # for i in range(6) : 
+        #     for c in cube[i] : print(c)
+        #     print('-'*8)
+        
+    ## 정답
+    for c in cube[0] : print(''.join(c))
